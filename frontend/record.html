@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medical Records | QuickClinic</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar-fixed">
+    <h2>QuickClinic</h2>
+    <ul>
+      <li><a href="dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="book.html">📅 Book</a></li>
+      <li><a href="chat.html">💬 Chat</a></li>
+      <li><a href="record.html">📁 Records</a></li>
+      <li id="adminLink" style="display: none;"><a href="admin.html">📊 Admin</a></li>
+      <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Background strip -->
+  <div class="background-strip"></div>
+
+  <!-- Main Content -->
+  <main class="dashboard-content">
+    <button id="darkToggle" class="dark-mode-toggle">🌙</button>
+
+    <div class="floating-box">
+      <h2>Your Medical Records</h2>
+
+      <!-- File Upload Form -->
+      <form id="recordForm">
+        <label for="file">Upload Report</label>
+        <input type="file" id="file" accept=".pdf,.png,.jpg,.jpeg" required />
+
+        <label for="desc">Description</label>
+        <input type="text" id="desc" placeholder="e.g. X-ray for chest pain" required />
+
+        <button type="submit" class="btn">Upload</button>
+      </form>
+
+      <!-- Uploaded Records List -->
+      <div id="recordList" class="record-list">
+        <h3>Uploaded Files</h3>
+        <ul id="filesUl"></ul>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/darkmode.js"></script>
+  <script src="assets/sidebar.js"></script>
+  <script src="assets/record.js"></script>
+</body>
+</html>

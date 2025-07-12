@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | QuickClinic</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="theme-color" content="#0b7d77">
+
+</head>
+<body>
+  <div class="sidebar">
+  <h3>QuickClinic</h3>
+  <ul>
+    <li><a href="dashboard.html">🏠 Dashboard</a></li>
+    <li><a href="book.html">📅 Book</a></li>
+    <li><a href="chat.html">💬 Chat</a></li>
+    <li><a href="record.html">📁 Records</a></li>
+    <li id="adminLink" style="display: none;"><a href="admin.html">📊 Admin</a></li>
+    <li><a href="#" onclick="logout()">⚙️ Logout</a></li>
+  </ul>
+</div>
+<button class="toggle-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+  <button id="themeToggle" class="btn">Toggle Dark Mode</button>
+
+  <div class="container">
+    <h2>Login to QuickClinic</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required><br>
+      <input type="password" id="password" placeholder="Password" required><br>
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p>New here? <a href="register.html">Register</a></p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const loginData = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(loginData)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token || '');
+          localStorage.setItem('user', JSON.stringify(data.user));
+          alert('Login successful!');
+          window.location.href = 'dashboard.html';
+        } else {
+          alert(data.error || 'Login failed.');
+        }
+      } catch (err) {
+        alert('Server error. Try again later.');
+      }
+    });
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+        .catch(err => console.error('❌ Service Worker registration failed:', err));
+    });
+  }
+</script>
+<script>
+  const themeToggle = document.getElementById('themeToggle');
+
+  // Load saved preference
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+  });
+</script>
+
+
+</body>
+</html>

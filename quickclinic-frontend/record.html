@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Records | QuickClinic</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="theme-color" content="#0b7d77">
+
+</head>
+<body>
+  <button class="toggle-btn" onclick="toggleSidebar()">☰ Menu</button>
+  <div class="sidebar">
+  <h3>QuickClinic</h3>
+  <ul>
+    <li><a href="dashboard.html">🏠 Dashboard</a></li>
+    <li><a href="book.html">📅 Book</a></li>
+    <li><a href="chat.html">💬 Chat</a></li>
+    <li><a href="record.html">📁 Records</a></li>
+    <li id="adminLink" style="display: none;"><a href="admin.html">📊 Admin</a></li>
+    <li><a href="#" onclick="logout()">⚙️ Logout</a></li>
+  </ul>
+</div>
+
+
+  <button id="themeToggle" class="btn">Toggle Dark Mode</button>
+
+  <div class="container">
+    <h2>Medical Records</h2>
+
+    <div id="userInfo"></div>
+
+    <!-- Doctor Upload Form -->
+    <form id="recordForm" style="display:none;" enctype="multipart/form-data">
+      <label for="patientId">Patient ID</label>
+      <input type="text" id="patientId" placeholder="Enter patient ID" required><br>
+
+      <label for="diagnosis">Diagnosis</label>
+      <input type="text" id="diagnosis" required><br>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" placeholder="Add extra notes"></textarea><br>
+
+      <label for="file">Upload Report (PDF/Image)</label>
+      <input type="file" id="file"><br>
+
+      <button class="btn" type="submit">Save Record</button>
+    </form>
+
+    <h3>Medical History</h3>
+    <ul id="recordList"></ul>
+
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+
+    if (!user || !token) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
+    }
+
+    const userInfo = document.getElementById("userInfo");
+    const form = document.getElementById("recordForm");
+
+    userInfo.innerHTML = `
+      <p><strong>Name:</strong> ${user.name}</p>
+      <p><strong>Email:</strong> ${user.email}</p>
+      <p><strong>Role:</strong> ${user.role}</p>
+    `;
+
+    if (user.role === "doctor") {
+      form.style.display = "block";
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("patient", document.getElementById("patientId").value.trim());
+      formData.append("diagnosis", document.getElementById("diagnosis").value.trim());
+      formData.append("notes", document.getElementById("notes").value.trim());
+      formData.append("file", document.getElementById("file").files[0]);
+
+      try {
+        const res = await fetch("http://localhost:5000/api/records", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+        alert(data.message || "Record saved.");
+        window.location.reload();
+      } catch (err) {
+        alert("Error saving record");
+      }
+    });
+
+    async function loadRecords() {
+      const patientId = user.role === 'patient' ? user._id : prompt("Enter patient ID to view records:");
+      try {
+        const res = await fetch(`http://localhost:5000/api/records/${patientId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        const list = document.getElementById("recordList");
+
+        if (!data.records || data.records.length === 0) {
+          list.innerHTML = "<li>No records found.</li>";
+          return;
+        }
+
+        data.records.forEach(rec => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <strong>Date:</strong> ${new Date(rec.createdAt).toLocaleDateString()}<br>
+            <strong>Doctor:</strong> ${rec.doctor?.name || 'Unknown'}<br>
+            <strong>Diagnosis:</strong> ${rec.diagnosis}<br>
+            <strong>Notes:</strong> ${rec.notes}<br>
+            ${rec.file ? `<a href="http://localhost:5000/uploads/${rec.file}" target="_blank">Download Report</a><br>` : ''}
+            <hr>
+          `;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        alert("Failed to load records.");
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    loadRecords();
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+        .catch(err => console.error('❌ Service Worker registration failed:', err));
+    });
+  }
+</script>
+<script>
+  const themeToggle = document.getElementById('themeToggle');
+
+  // Load saved preference
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+  });
+</script>
+<script>
+  // Sidebar toggle
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // Get user info safely
+  let userData = localStorage.getItem('user');
+  if (!userData) {
+    window.location.href = 'login.html';
+  }
+
+  // ✅ Avoid re-declaration
+  let currentUser;
+  try {
+    currentUser = JSON.parse(userData);
+  } catch (e) {
+    console.error("Invalid user data");
+    localStorage.clear();
+    window.location.href = 'login.html';
+  }
+
+  // Show admin link only if admin
+  if (currentUser && currentUser.role === 'admin') {
+    document.getElementById('adminLink').style.display = 'block';
+  }
+
+  // Logout function
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'login.html';
+  }
+
+  // Optional: auto hide sidebar on mobile
+  window.addEventListener('load', () => {
+    if (window.innerWidth < 700) {
+      document.getElementById('sidebar').style.display = 'none';
+    }
+  });
+</script>
+
+
+
+</body>
+</html>
