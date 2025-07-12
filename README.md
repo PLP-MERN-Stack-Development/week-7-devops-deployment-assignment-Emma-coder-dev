@@ -19,7 +19,6 @@
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB (MongoDB Atlas)
 - **Deployment:** Vercel (frontend), Render (backend)
-- **CI/CD:** GitHub Actions (Coming soon)
 - **Monitoring:** UptimeRobot, Render Logs
 
 ---
@@ -97,23 +96,6 @@ npm start
 ---
 
 
-## 📡 Monitoring & Health
-
-- `/health` route available at:  
-  [`https://quickclinic-backend.onrender.com/health`](https://quickclinic-backend.onrender.com/health)
-- Monitored using **UptimeRobot**
-- Logs available in **Render Dashboard**
-
----
-
-## 🧪 Upcoming CI/CD Integration
-
-- GitHub Actions for:
-  - ✅ Running tests
-  - ✅ Linting code
-  - ✅ Auto deployment
-
----
 
 ## 📖 License
 
